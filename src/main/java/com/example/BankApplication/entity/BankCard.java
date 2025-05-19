@@ -1,20 +1,78 @@
 package com.example.BankApplication.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnTransformer;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
-    @Entity
-    @Table(name = "bank_cards")
+@Entity
+@Table(name = "bank_cards")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class BankCard {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(nullable = false, unique = true)
+    private String cardNumber;
+
+    @Column(nullable = false)
+    private String fullName;
+
+    @Column(nullable = false)
+    private LocalDate creationDate;
+
+    @Column(nullable = false)
+    private LocalDate expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CardStatus status;
+
+    @Column(nullable = false)
+    private BigDecimal balance;
+
+    @OneToMany
+    private List<Transaction> transactions = new ArrayList<>();
+
+    public BankCard(User user, String fullName, CardStatus status, BigDecimal balance) {
+        this.user = user;
+        this.fullName = fullName;
+        this.status = status;
+        this.balance = balance;
+    }
+
+    @PrePersist
+    private void prePersist() {
+        this.creationDate = LocalDate.now();
+        this.expiryDate = LocalDate.now().plusYears(3);
+    }
+
     @Getter
-    @Setter
-    public class BankCard {
+    public enum CardStatus {
+        ACTIVE("Активна"),
+        BLOCKED("Заблокирована"),
+        EXPIRED("Истек срок действия");
 
+        private final String description;
 
+        CardStatus(String description) {
+            this.description = description;
+        }
+    }
 }
 
 
